@@ -1,0 +1,5 @@
+latitude,longitude,acq_date,acq_time,brightness,frp,confidence,satellite,instrument,record_type
+12.0200,76.1200,2023-03-14,0830,318.5,24.1,high,Aqua,MODIS,satellite_hotspot
+12.0200,76.1200,2023-03-14,0830,318.5,24.1,high,Aqua,MODIS,satellite_hotspot
+12.0350,76.1400,2024-02-20,1315,326.0,42.8,nominal,N20,VIIRS,confirmed_incident
+999.0000,76.1500,2024-02-21,1400,310.0,10.0,low,Terra,MODIS,satellite_hotspot

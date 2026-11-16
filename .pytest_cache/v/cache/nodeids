@@ -1,0 +1,15 @@
+[
+  "backend/tests/test_api.py::test_csv_upload_mapping_and_cleanup",
+  "backend/tests/test_api.py::test_dashboard_empty_state_and_study_area",
+  "backend/tests/test_api.py::test_geotiff_upload_and_grid_generation",
+  "backend/tests/test_api.py::test_health_endpoint",
+  "backend/tests/test_api.py::test_unsupported_file_rejection",
+  "backend/tests/test_math_and_ca.py::test_cellular_automata_lifecycle_and_persistence",
+  "backend/tests/test_math_and_ca.py::test_combinatorics_topics_and_edge_cases",
+  "backend/tests/test_math_and_ca.py::test_generating_functions_and_recurrences",
+  "backend/tests/test_math_and_ca.py::test_graph_theory_engine_and_handshaking",
+  "backend/tests/test_math_and_ca.py::test_grid_coord_conversion_and_neighborhoods",
+  "backend/tests/test_math_and_ca.py::test_safe_logic_parser_and_quantifiers",
+  "backend/tests/test_math_and_ca.py::test_trees_and_algorithms",
+  "backend/tests/test_prompt3_e2e.py::test_prompt3_end_to_end_pipeline"
+]

@@ -1,0 +1,6 @@
+{
+  "name": "WildfireX",
+  "description": "Geospatial research and discrete mathematical simulation platform for studying forest landscapes, historical wildfire observations, and landscape graphs in Nagarhole National Park, Karnataka, India.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

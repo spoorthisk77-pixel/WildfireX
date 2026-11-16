@@ -1,0 +1,33 @@
+metadata_key,value
+report_id,WXR-2
+title,Nagarhole P3 Validation CSV
+report_type,comprehensive_research
+generated_at_utc,2026-11-16T17:15:18.612649+00:00
+study_region,"Nagarhole National Park, Karnataka, India"
+grid_id,4
+simulation_id,2
+experiment_id,1
+disclaimer,"WildfireX is an academic and environmental research prototype. Its controlled cellular automata demonstrations are educational and hypothetical. Outputs are not validated operational wildfire predictions and must not be used for emergency-response decisions. Historical satellite hotspot observations are not equivalent to confirmed fire perimeters. Real-world environmental conclusions require verified datasets, field validation and expert assessment."
+
+section_number,section_title,content
+1,Project Title,Nagarhole P3 Validation CSV — WildfireX Geospatial Research & Discrete Mathematics Platform
+2,Study Area,"Region: Nagarhole National Park, Karnataka, India. Name: Nagarhole Study Region. Verification Status: awaiting_boundary_verification. CRS: Awaiting verified boundary CRS. Area: Not computed without boundary. Boundary Vertices: 0."
+3,Dataset Information,"5 registered dataset(s) in SQLite provenance store. [DS-5] Nagarhole FIRMS P3 (csv, 408 bytes, SHA-256 4fb83e8e42cb, status=processed); [DS-4] Nagarhole Sample ESA (geotiff, 522 bytes, SHA-256 8d648c24a9cf, status=processed); [DS-3] Sample Raster (geotiff, 414 bytes, SHA-256 f9d371160b10, status=processed); [DS-2] Sample Raster (geotiff, 414 bytes, SHA-256 f9d371160b10, status=processed); [DS-1] Sample Raster (geotiff, 414 bytes, SHA-256 f9d371160b10, status=processed)"
+4,Data Sources,"Supported authentic sources: ESA WorldCover 2021 v200 (10m land cover), NASA FIRMS (MODIS/VIIRS active-fire hotspots), Copernicus Sentinel-2 L2A (multispectral NDVI), and SRTM 30m DEM. Imported sources: esa_worldcover, nasa_firms"
+5,Geospatial Processing Method,"Vector/raster ingestion validates CRS, bounds, and geometry integrity via Rasterio, GeoPandas, Shapely, and PyProj. Metric analysis reprojects layers to WGS 84 / UTM Zone 43N (EPSG:32643), optionally clips to imported study-area polygons, and discretizes continuous rasters/vectors into indexed cellular grids without synthetic imputation."
+6,Mathematical Foundations,"WildfireX implements five Discrete Mathematics modules backed by NetworkX and SymPy: (I) Combinatorics & Inclusion-Exclusion (sum/product rules, nPr, nCr, pigeonhole, derangements, rook polynomials); (II) Propositional & Predicate Logic (safe AST truth tables, equivalences, De Morgan laws, inference, finite quantifiers); (III) Generating Functions & Recurrence Relations (OGF, EGF, integer partitions, 1st/2nd-order closed-form verification); (IV) Graph Theory G=(V,E) (Handshaking Lemma sum(deg)=2|E|, VF2 isomorphism, walks/paths, Euler/Hamiltonian, planarity & coloring); (V) Trees & Algorithms (Kruskal/Prim MST, Dijkstra shortest paths, Huffman prefix-free coding, binary tree traversals, sorting)."
+7,Grid Structure,"Active Grid #4 'Nagarhole P3 Grid': 11x11 cells (121 total, 120 valid, 1 NoData), resolution 239.4m, CRS EPSG:32643, boundary_clipped=False."
+8,Graph Analysis,"Cellular adjacency graph G=(V,E): |V|=120 vertices, |E|=417 edges, connected_components=1, connectivity=8-neighbor stencil."
+9,Controlled Simulation Configuration,"SimulationRun #2 'P3 Moore Baseline' [classification=hypothetical_simulation]: neighborhood=moore_8, boundary=absorbing, seed_count=1, generations=3/15, parameters={""name"": ""P3 Moore Baseline"", ""grid_id"": 4, ""neighborhood"": ""moore_8"", ""boundary_condition"": ""absorbing"", ""seed_cell_uids"": [""R000C000""], ""barrier_cell_uids"": [], ""base_transition_factor"": 0.65, ""moisture_damping"": 0.15, ""wind_direction"": ""E"", ""wind_bias"": 0.1, ""burn_duration_steps"": 2, ""max_generations"": 15, ""deterministic_mode"": true, ""random_seed"": 42}."
+10,Results,"CA Final State Counts (Gen 3): {""non_burnable"": 5, ""unburned"": 101, ""ignited"": 8, ""burning"": 4, ""extinguished"": 3}. Experiment #1 Results: {""module_type"": ""combinatorics"", ""dataset_id"": 4, ""dataset_version_hash"": ""8d648c24a9cfb11ee830bb90f48065cc6f19e330a852a6f03ab9e8b737bedc11"", ""data_classification"": ""mathematical_model"", ""summary"": {""C(n,r)"": 56, ""str"": ""56""}, ""duration_ms"": 0.08}. Historical Observations Summary: 3 total records (2 satellite hotspots, 1 separately marked confirmed incidents, 1 flagged duplicates)."
+11,Charts & Visualizations Summary,"Land-Cover Breakdown: Tree cover: 107 cells, Grassland: 9 cells, Permanent water bodies: 4 cells, NoData: 1 cells. Observations by Year: 2023: 2, 2024: 1"
+12,Data Quality Information,"Strict No-Fabrication Policy: missing elevation, NDVI, coordinates, or NoData pixels remain null/flagged and are never silently imputed. Audited 5 dataset(s) and 4 grid(s); recorded 9 processing job(s)."
+13,Assumptions,"Discrete uniform 2D cellular grid geometry; binary/categorical land-cover fuel capability masks; explicit absorbing/reflective/periodic boundary conditions; deterministic or bounded discrete-time transition steps; planar neighborhood graph G=(V,E) weighted on cell centroids."
+14,Limitations,"WildfireX is an academic and environmental research prototype. Its controlled cellular automata demonstrations are educational and hypothetical. Outputs are not validated operational wildfire predictions and must not be used for emergency-response decisions. Historical satellite hotspot observations are not equivalent to confirmed fire perimeters. Real-world environmental conclusions require verified datasets, field validation and expert assessment. Satellite-detected hotspots (e.g., NASA FIRMS MODIS/VIIRS thermal anomalies) represent 375m-1000m pixel thermal detections and are NOT automatically equivalent to confirmed wildfire incidents or mapped burned-area perimeters. Geographical land-cover layers and hypothetical cellular automata outputs are stored and labeled separately."
+15,References,"1. Zanaga, D. et al. (2022). ESA WorldCover 10 m 2021 v200. DOI: 10.5281/zenodo.7254221. 2. NASA FIRMS (MODIS/VIIRS Active Fire Data). Earth Observing System Data and Information System (EOSDIS). 3. Copernicus Sentinel-2 L2A & NASA SRTM 30m DEM. 4. Rosen, K. H. Discrete Mathematics and Its Applications."
+
+landcover_category,cell_count,
+Tree cover,107,
+Grassland,9,
+Permanent water bodies,4,
+NoData,1,
