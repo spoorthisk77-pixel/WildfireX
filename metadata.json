@@ -1,6 +1,6 @@
 {
-  "name": "WildfireX",
-  "description": "Geospatial research and discrete mathematical simulation platform for studying forest landscapes, historical wildfire observations, and landscape graphs in Nagarhole National Park, Karnataka, India.",
+  "name": "CA-Wildfire Core Engine",
+  "description": "Global Multi-Dataset Simulation & Discrete Mathematics Framework for geospatial voxel analytics, cellular automata, and graph optimization.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

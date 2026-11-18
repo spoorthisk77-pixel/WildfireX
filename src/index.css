@@ -1,16 +1,18 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --font-sans: "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
-    color: #151b18;
-    background-color: #f5f6f3;
+    color: #0f172a;
+    background-color: #f8fafc;
+    color-scheme: light;
   }
 
   h1, h2, h3, h4 {
@@ -20,4 +22,52 @@
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Subtle SaaS scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth ocean-blue SaaS range sliders */
+input[type='range'].saas-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  outline: none;
+}
+
+input[type='range'].saas-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: #0284c7;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+}
+
+input[type='range'].saas-slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: #0284c7;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
 }
