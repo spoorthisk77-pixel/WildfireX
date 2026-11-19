@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Shield,
   SkipForward,
+  SlidersHorizontal,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -58,6 +59,8 @@ export function WorkspacePage() {
   const [projection, setProjection] = useState<'isometric' | 'perspective'>('isometric');
   const [resetCamCounter, setResetCamCounter] = useState(0);
   const [dockCollapsed, setDockCollapsed] = useState(false);
+  const [mobileParamsOpen, setMobileParamsOpen] = useState(false);
+  const [mobileInspectorOpen, setMobileInspectorOpen] = useState(true);
 
   const activeCell = useMemo(() => {
     const targetId = hoveredCellId || selectedCellId;
@@ -71,14 +74,12 @@ export function WorkspacePage() {
     let burning = 0;
     let extinguished = 0;
     let firebreak = 0;
-    let water = 0;
     for (const c of cells) {
       if (c.state === 'unburned') unburned += 1;
       else if (c.state === 'ignited') ignited += 1;
       else if (c.state === 'burning') burning += 1;
       else if (c.state === 'extinguished') extinguished += 1;
       else if (c.state === 'firebreak') firebreak += 1;
-      else if (c.state === 'water') water += 1;
     }
     const activeFires = burning + ignited;
     const affectedBlocks = activeFires + extinguished;
@@ -122,7 +123,7 @@ export function WorkspacePage() {
           borderWidth: 2,
           pointRadius: 2,
           fill: true,
-          tension: 0.25,
+          tension: 0.28,
         },
         {
           label: 'Ignited Perimeter',
@@ -131,7 +132,7 @@ export function WorkspacePage() {
           backgroundColor: 'rgba(217, 119, 6, 0.08)',
           borderWidth: 1.8,
           pointRadius: 2,
-          tension: 0.25,
+          tension: 0.28,
         },
         {
           label: 'Contained / Extinguished',
@@ -140,7 +141,7 @@ export function WorkspacePage() {
           backgroundColor: 'rgba(2, 132, 199, 0.08)',
           borderWidth: 1.8,
           pointRadius: 1.5,
-          tension: 0.25,
+          tension: 0.28,
         },
       ],
     }),
@@ -150,15 +151,115 @@ export function WorkspacePage() {
   const fmtNum = (val: number | null, suffix = '', digits = 2) =>
     val === null || val === undefined ? '—' : `${val.toFixed(digits)}${suffix}`;
 
+  const renderSpreadSelects = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+      <select
+        value={config.neighborhood}
+        onChange={(e) =>
+          updateConfig({ neighborhood: e.target.value as 'moore_8' | 'von_neumann_4' })
+        }
+        className="min-h-[38px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 hover:border-slate-300 transition-colors"
+        aria-label="Spread neighborhood pattern"
+      >
+        <option value="moore_8">8-Direction Spread</option>
+        <option value="von_neumann_4">4-Direction Spread</option>
+      </select>
+      <select
+        value={config.boundaryCondition}
+        onChange={(e) =>
+          updateConfig({
+            boundaryCondition: e.target.value as 'absorbing' | 'reflective' | 'periodic',
+          })
+        }
+        className="min-h-[38px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700 hover:border-slate-300 transition-colors"
+        aria-label="Sector boundary behavior"
+      >
+        <option value="absorbing">Open Boundary</option>
+        <option value="reflective">Contained Edge</option>
+        <option value="periodic">Continuous Wrap</option>
+      </select>
+    </div>
+  );
+
+  const renderWeatherSliders = () => (
+    <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+      <div>
+        <div className="flex justify-between text-slate-600 mb-1.5">
+          <span className="font-medium">Wind Speed</span>
+          <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{config.windSpeedKmh} km/h</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={65}
+          step={1}
+          value={config.windSpeedKmh}
+          onChange={(e) => updateConfig({ windSpeedKmh: Number(e.target.value) })}
+          className="saas-slider w-full"
+        />
+      </div>
+
+      <div>
+        <div className="flex justify-between text-slate-600 mb-1.5">
+          <span className="inline-flex items-center gap-1 font-medium">
+            <Compass className="h-3.5 w-3.5 text-[#0284C7]" /> Compass Angle
+          </span>
+          <span className="font-mono font-semibold text-slate-800 tabular-nums">{config.windAngleDeg}°</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={359}
+          step={5}
+          value={config.windAngleDeg}
+          onChange={(e) => updateConfig({ windAngleDeg: Number(e.target.value) })}
+          className="saas-slider w-full"
+        />
+      </div>
+
+      <div>
+        <div className="flex justify-between text-slate-600 mb-1.5">
+          <span className="font-medium">Temperature</span>
+          <span className="font-mono font-semibold text-amber-600 tabular-nums">{config.ambientTempC}°C</span>
+        </div>
+        <input
+          type="range"
+          min={10}
+          max={50}
+          step={1}
+          value={config.ambientTempC}
+          onChange={(e) => updateConfig({ ambientTempC: Number(e.target.value) })}
+          className="saas-slider w-full"
+        />
+      </div>
+
+      <div>
+        <div className="flex justify-between text-slate-600 mb-1.5">
+          <span className="font-medium">Humidity</span>
+          <span className="font-mono font-semibold text-[#16A34A] tabular-nums">{config.humidityPct}%</span>
+        </div>
+        <input
+          type="range"
+          min={5}
+          max={95}
+          step={1}
+          value={config.humidityPct}
+          onChange={(e) => updateConfig({ humidityPct: Number(e.target.value) })}
+          className="saas-slider w-full"
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 sm:space-y-6 animate-panel-enter">
       {/* Workspace Context Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
             3D Isometric Wildfire Simulation Arena
           </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 tabular-nums">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500 tabular-nums">
             <span>{isInitialized ? `Sector: ${datasetMeta?.region}` : 'Status: Dormant (No dataset loaded)'}</span>
             <span aria-hidden="true">·</span>
             <span>Terrain Grid: {rows}×{cols} ({cells.length} blocks)</span>
@@ -167,21 +268,21 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {isInitialized ? (
             <>
               <button
                 type="button"
                 onClick={openReportModal}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2 text-xs font-semibold text-[#0284C7] shadow-2xs hover:bg-sky-100 transition-colors whitespace-nowrap"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-[#0284C7] px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#0369A1] active:scale-[0.99] transition-all whitespace-nowrap"
               >
                 <FileDown className="h-3.5 w-3.5" />
-                <span>Export Report (PDF / PNG)</span>
+                <span>Export Report</span>
               </button>
               <button
                 type="button"
                 onClick={() => captureSnapshot()}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-2xs hover:border-[#0284C7] hover:text-[#0284C7] transition-colors whitespace-nowrap"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-2xs hover:border-[#0284C7] hover:text-[#0284C7] transition-all whitespace-nowrap"
               >
                 <Camera className="h-3.5 w-3.5" />
                 <span>Save Snapshot</span>
@@ -189,17 +290,17 @@ export function WorkspacePage() {
               <button
                 type="button"
                 onClick={unloadToDormant}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 shadow-2xs hover:border-red-300 hover:text-red-600 transition-colors whitespace-nowrap"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 shadow-2xs hover:border-red-300 hover:text-red-600 transition-all whitespace-nowrap"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span>Clear Dataset</span>
+                <span>Clear</span>
               </button>
             </>
           ) : (
             <button
               type="button"
               onClick={openUploadModal}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-[#0284C7] shadow-2xs hover:bg-sky-50 transition-colors whitespace-nowrap"
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-sky-200 bg-white px-4 py-2 text-xs font-semibold text-[#0284C7] shadow-2xs hover:bg-sky-50 transition-all whitespace-nowrap"
             >
               <Upload className="h-3.5 w-3.5" />
               <span>Load Forest Dataset</span>
@@ -209,10 +310,10 @@ export function WorkspacePage() {
       </div>
 
       {/* 4-Column Telemetry Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 tabular-nums">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 tabular-nums">
+        <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow duration-200">
           <div className="text-xs font-medium text-slate-500">Burned Acreage</div>
-          <div className="mt-1.5 font-mono text-2xl font-bold text-slate-900">
+          <div className="mt-1.5 font-mono text-xl sm:text-2xl font-bold text-slate-900">
             {isInitialized ? `${counts.burnedAcres.toLocaleString()} ac` : '0.0 ac'}
           </div>
           <div className="mt-1 text-xs text-slate-500">
@@ -220,9 +321,9 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow duration-200">
           <div className="text-xs font-medium text-slate-500">Active Fire Count</div>
-          <div className="mt-1.5 font-mono text-2xl font-bold text-red-600">
+          <div className="mt-1.5 font-mono text-xl sm:text-2xl font-bold text-red-600">
             {isInitialized ? counts.activeFires : 0}
           </div>
           <div className="mt-1 text-xs text-slate-500">
@@ -230,9 +331,9 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow duration-200">
           <div className="text-xs font-medium text-slate-500">Containment Efficiency</div>
-          <div className="mt-1.5 font-mono text-2xl font-bold text-[#16A34A]">
+          <div className="mt-1.5 font-mono text-xl sm:text-2xl font-bold text-[#16A34A]">
             {isInitialized ? `${counts.containmentEfficiency}%` : '—'}
           </div>
           <div className="mt-1 text-xs text-slate-500">
@@ -240,9 +341,9 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow duration-200">
           <div className="text-xs font-medium text-slate-500">Elapsed Time Steps</div>
-          <div className="mt-1.5 font-mono text-2xl font-bold text-[#0284C7]">
+          <div className="mt-1.5 font-mono text-xl sm:text-2xl font-bold text-[#0284C7]">
             {generation}
           </div>
           <div className="mt-1 text-xs text-slate-500">
@@ -253,354 +354,356 @@ export function WorkspacePage() {
 
       {/* Main Split: 3D Isometric Terrain Viewport + Right Block Inspector & Curve */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
-        {/* Main 3D Simulation Arena */}
-        <section className="xl:col-span-8 relative min-h-[580px] lg:h-[650px] rounded-xl border border-slate-200 bg-[#F1F5F9] shadow-sm overflow-hidden">
-          <VoxelViewport3D
-            cells={cells}
-            rows={rows}
-            cols={cols}
-            isInitialized={isInitialized}
-            config={config}
-            selectedCellId={selectedCellId}
-            hoveredCellId={hoveredCellId}
-            highlightedCellIds={highlightedCellIds}
-            projection={projection}
-            resetCamCounter={resetCamCounter}
-            onSelectCell={(id) => setSelectedCellId(id)}
-            onHoverCell={(id) => setHoveredCellId(id)}
-            onRegisterCapture={registerViewportCapture}
-            onCacheFrame={setLatestViewportSnapshotUrl}
-          />
+        {/* Left/Center Column: 3D Arena + Mobile Drawer Controls */}
+        <div className="xl:col-span-8 flex flex-col gap-4">
+          <section
+            className={`relative rounded-xl border border-slate-200/90 bg-[#F1F5F9] shadow-xs overflow-hidden ${
+              isInitialized ? 'h-[340px] sm:h-[460px] md:h-[580px] lg:h-[650px]' : 'h-[380px] sm:h-[480px] lg:h-[650px]'
+            }`}
+          >
+            <VoxelViewport3D
+              cells={cells}
+              rows={rows}
+              cols={cols}
+              isInitialized={isInitialized}
+              config={config}
+              selectedCellId={selectedCellId}
+              hoveredCellId={hoveredCellId}
+              highlightedCellIds={highlightedCellIds}
+              projection={projection}
+              resetCamCounter={resetCamCounter}
+              onSelectCell={(id) => setSelectedCellId(id)}
+              onHoverCell={(id) => setHoveredCellId(id)}
+              onRegisterCapture={registerViewportCapture}
+              onCacheFrame={setLatestViewportSnapshotUrl}
+            />
 
-          {/* Top-Left Terrain Banner & Top-Right Camera Switcher */}
-          <div className="pointer-events-none absolute top-4 left-4 right-4 flex flex-wrap items-start justify-between gap-3">
-            <div className="pointer-events-auto rounded-lg border border-slate-200 bg-white/95 px-3.5 py-2 shadow-sm">
-              <div className="text-xs font-semibold text-slate-900">
-                {isInitialized ? datasetMeta?.name : 'Dormant Terrain Grid'}
-              </div>
-              <div className="mt-0.5 text-[11px] text-slate-500 tabular-nums">
-                {isInitialized
-                  ? `${datasetMeta?.sourceFormat.toUpperCase()} · ${datasetMeta?.recordCount} records · Wind ${config.windSpeedKmh} km/h at ${config.windAngleDeg}°`
-                  : 'Empty grid state · Zero active data loaded'}
-              </div>
-            </div>
-
-            <div className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white/95 p-1 shadow-sm text-xs font-medium">
-              <button
-                type="button"
-                onClick={() => setProjection('isometric')}
-                className={`rounded-md px-2.5 py-1 transition-colors whitespace-nowrap ${
-                  projection === 'isometric' ? 'bg-[#0284C7] text-white' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Isometric
-              </button>
-              <button
-                type="button"
-                onClick={() => setProjection('perspective')}
-                className={`rounded-md px-2.5 py-1 transition-colors whitespace-nowrap ${
-                  projection === 'perspective' ? 'bg-[#0284C7] text-white' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Perspective
-              </button>
-              <button
-                type="button"
-                onClick={() => setResetCamCounter((n) => n + 1)}
-                className="rounded-md px-2 py-1 text-slate-500 hover:text-slate-900"
-                title="Reset Camera"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Empty State Prompt (Exact Required Copy) */}
-          {!isInitialized && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-16 flex justify-center px-4">
-              <div className="pointer-events-auto max-w-lg rounded-xl border border-slate-200 bg-white p-6 text-center shadow-lg">
-                <div className="text-sm font-semibold text-slate-900">
-                  Please upload a forest dataset (CSV, JSON, GeoJSON) to initialize simulation
+            {/* Top-Left Terrain Banner & Top-Right Camera Switcher */}
+            <div className="pointer-events-none absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 flex items-start justify-between gap-2.5">
+              <div className="pointer-events-auto min-w-0 max-w-[58%] sm:max-w-none rounded-lg border border-slate-200/90 bg-white/95 backdrop-blur-xs px-3 py-2 shadow-xs">
+                <div className="text-xs font-semibold text-slate-900 truncate">
+                  {isInitialized ? datasetMeta?.name : 'Dormant Terrain Grid'}
                 </div>
-                <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                  Import your own geospatial layer or select a calibrated global forest sector (Amazon, Western Ghats, Bannerghatta, or Boreal Taiga) to populate terrain elevation, canopy fuel, and moisture blocks.
-                </p>
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={openUploadModal}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#0284C7] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0369A1] transition-colors"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    <span>Import Forest Dataset</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/ingestion')}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-                  >
-                    Open Full Dataset Portal
-                  </button>
+                <div className="hidden sm:block mt-0.5 text-[11px] text-slate-500 tabular-nums">
+                  {isInitialized
+                    ? `${datasetMeta?.sourceFormat.toUpperCase()} · ${datasetMeta?.recordCount} records · Wind ${config.windSpeedKmh} km/h at ${config.windAngleDeg}°`
+                    : 'Empty grid state · Zero active data loaded'}
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Collapsible Bottom Control Dock */}
-          {isInitialized && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-3 flex flex-col items-center px-3">
-              <button
-                type="button"
-                onClick={() => setDockCollapsed((v) => !v)}
-                className="pointer-events-auto mb-1.5 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/95 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:text-slate-900"
-              >
-                {dockCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                <span>{dockCollapsed ? 'Show Simulation Controls' : 'Hide Simulation Controls'}</span>
-              </button>
-
-              {!dockCollapsed && (
-                <div className="pointer-events-auto w-full max-w-[900px] rounded-xl border border-slate-200 bg-white/95 px-4 py-3.5 shadow-lg space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={togglePlay}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-[#16A34A] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#15803D] transition-colors whitespace-nowrap"
-                      >
-                        {isRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                        <span>{isRunning ? 'Pause' : 'Start Simulation'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={stepOnce}
-                        disabled={isRunning}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 whitespace-nowrap"
-                      >
-                        <SkipForward className="h-3.5 w-3.5" />
-                        <span>Step +1</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={autoSeedIgnition}
-                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 whitespace-nowrap"
-                      >
-                        <Flame className="h-3.5 w-3.5" />
-                        <span>Seed Fire</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetSimulation}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                        <span>Reset</span>
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs">
-                      <select
-                        value={config.neighborhood}
-                        onChange={(e) =>
-                          updateConfig({ neighborhood: e.target.value as 'moore_8' | 'von_neumann_4' })
-                        }
-                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-slate-700"
-                        aria-label="Spread neighborhood pattern"
-                      >
-                        <option value="moore_8">8-Direction Spread</option>
-                        <option value="von_neumann_4">4-Direction Spread</option>
-                      </select>
-                      <select
-                        value={config.boundaryCondition}
-                        onChange={(e) =>
-                          updateConfig({
-                            boundaryCondition: e.target.value as 'absorbing' | 'reflective' | 'periodic',
-                          })
-                        }
-                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-slate-700"
-                        aria-label="Sector boundary behavior"
-                      >
-                        <option value="absorbing">Open Boundary</option>
-                        <option value="reflective">Contained Edge</option>
-                        <option value="periodic">Continuous Wrap</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Environmental Parameter Sliders */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-100 pt-3 text-xs">
-                    <div>
-                      <div className="flex justify-between text-slate-600 mb-1.5">
-                        <span className="font-medium">Wind Speed</span>
-                        <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{config.windSpeedKmh} km/h</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={65}
-                        step={1}
-                        value={config.windSpeedKmh}
-                        onChange={(e) => updateConfig({ windSpeedKmh: Number(e.target.value) })}
-                        className="saas-slider w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-slate-600 mb-1.5">
-                        <span className="inline-flex items-center gap-1 font-medium">
-                          <Compass className="h-3.5 w-3.5 text-[#0284C7]" /> Compass Angle
-                        </span>
-                        <span className="font-mono font-semibold text-slate-800 tabular-nums">{config.windAngleDeg}°</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={359}
-                        step={5}
-                        value={config.windAngleDeg}
-                        onChange={(e) => updateConfig({ windAngleDeg: Number(e.target.value) })}
-                        className="saas-slider w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-slate-600 mb-1.5">
-                        <span className="font-medium">Temperature</span>
-                        <span className="font-mono font-semibold text-amber-600 tabular-nums">{config.ambientTempC}°C</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={10}
-                        max={50}
-                        step={1}
-                        value={config.ambientTempC}
-                        onChange={(e) => updateConfig({ ambientTempC: Number(e.target.value) })}
-                        className="saas-slider w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-slate-600 mb-1.5">
-                        <span className="font-medium">Humidity</span>
-                        <span className="font-mono font-semibold text-[#16A34A] tabular-nums">{config.humidityPct}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={5}
-                        max={95}
-                        step={1}
-                        value={config.humidityPct}
-                        onChange={(e) => updateConfig({ humidityPct: Number(e.target.value) })}
-                        className="saas-slider w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* Right Side Panel: Clean Block Tooltip Inspector + Propagation Chart */}
-        <aside className="xl:col-span-4 flex flex-col gap-5">
-          {/* Block Inspector Tooltip Card */}
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-semibold text-slate-900">Terrain Block Inspector</h2>
-              <span className="font-mono text-xs font-medium text-[#0284C7] tabular-nums">
-                {activeCell ? activeCell.id : 'Hover or click block'}
-              </span>
+              <div className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200/90 bg-white/95 backdrop-blur-xs p-1 shadow-xs text-xs font-medium shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setProjection('isometric')}
+                  className={`rounded-md px-2.5 py-1.5 transition-all whitespace-nowrap ${
+                    projection === 'isometric'
+                      ? 'bg-[#0284C7] text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span className="sm:hidden">Iso</span>
+                  <span className="hidden sm:inline">Isometric</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProjection('perspective')}
+                  className={`rounded-md px-2.5 py-1.5 transition-all whitespace-nowrap ${
+                    projection === 'perspective'
+                      ? 'bg-[#0284C7] text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span className="sm:hidden">3D</span>
+                  <span className="hidden sm:inline">Perspective</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResetCamCounter((n) => n + 1)}
+                  className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                  title="Reset Camera"
+                  aria-label="Reset Camera"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
 
-            {!activeCell ? (
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Move your pointer over or click any block inside the 3D isometric terrain to inspect elevation, fuel density, moisture index, temperature, and land-cover class.
-              </p>
-            ) : (
-              <>
-                <dl className="grid grid-cols-2 gap-3 text-xs tabular-nums">
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <dt className="text-slate-500">Coordinates (Row, Col)</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold text-slate-900">
-                      ({activeCell.row}, {activeCell.col})
-                    </dd>
+            {/* Empty State Prompt */}
+            {!isInitialized && (
+              <div className="pointer-events-none absolute inset-x-3 bottom-3 sm:inset-x-0 sm:bottom-14 flex justify-center">
+                <div className="pointer-events-auto w-full max-w-lg rounded-xl border border-slate-200 bg-white/95 backdrop-blur-xs p-4 sm:p-6 text-center shadow-lg">
+                  <div className="text-xs sm:text-sm font-semibold text-slate-900">
+                    Please upload a forest dataset (CSV, JSON, GeoJSON) to initialize simulation
                   </div>
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <dt className="text-slate-500">Block Status</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold text-[#0284C7] capitalize">
-                      {activeCell.state}
-                    </dd>
-                  </div>
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <dt className="text-slate-500">Elevation</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold text-slate-900">
-                      {fmtNum(activeCell.elevation, ' m', 1)}
-                    </dd>
-                  </div>
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <dt className="text-slate-500">Fuel Density</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold text-[#16A34A]">
-                      {fmtNum(activeCell.fuelDensity, '', 3)}
-                    </dd>
-                  </div>
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <dt className="text-slate-500">Moisture Index</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold text-[#0284C7]">
-                      {fmtNum(activeCell.moistureIndex, '', 3)}
-                    </dd>
-                  </div>
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <dt className="text-slate-500">Surface Temp</dt>
-                    <dd className="mt-1 font-mono text-sm font-semibold text-amber-600">
-                      {fmtNum(activeCell.temperature, ' °C', 1)}
-                    </dd>
-                  </div>
-                  <div className="col-span-2 rounded-lg border border-slate-100 bg-slate-50 p-3 flex items-center justify-between">
-                    <div>
-                      <dt className="text-slate-500">Land Cover / Biome</dt>
-                      <dd className="mt-0.5 text-xs font-semibold text-slate-900">{activeCell.biome}</dd>
-                    </div>
-                    <div className="text-right">
-                      <dt className="text-slate-500">GPS Lat / Lon</dt>
-                      <dd className="mt-0.5 font-mono text-[11px] text-slate-700">
-                        {activeCell.lat !== null && activeCell.lon !== null
-                          ? `${activeCell.lat.toFixed(4)}, ${activeCell.lon.toFixed(4)}`
-                          : '—'}
-                      </dd>
-                    </div>
-                  </div>
-                </dl>
-
-                {isInitialized && activeCell.state !== 'dormant' && (
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+                    Import your own geospatial layer or select a calibrated global forest sector (Amazon, Western Ghats, Bannerghatta, or Boreal Taiga) to populate terrain elevation, canopy fuel, and moisture blocks.
+                  </p>
+                  <div className="mt-3.5 sm:mt-4 flex flex-wrap items-center justify-center gap-2.5">
                     <button
                       type="button"
-                      onClick={() => igniteCell(activeCell.id)}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                      onClick={openUploadModal}
+                      className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-[#0284C7] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0369A1] transition-colors"
                     >
-                      <Flame className="h-3.5 w-3.5" />
-                      <span>Ignite Block</span>
+                      <Upload className="h-3.5 w-3.5" />
+                      <span>Import Forest Dataset</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => toggleFirebreak(activeCell.id)}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-[#0284C7] hover:bg-sky-100 transition-colors"
+                      onClick={() => navigate('/ingestion')}
+                      className="min-h-[40px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
                     >
-                      <Shield className="h-3.5 w-3.5" />
-                      <span>{activeCell.state === 'firebreak' ? 'Remove Break' : 'Add Firebreak'}</span>
+                      Open Dataset Portal
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Desktop Floating Collapsible Control Dock (hidden on mobile to keep 3D view uncluttered) */}
+            {isInitialized && (
+              <div className="hidden md:flex pointer-events-none absolute inset-x-0 bottom-3 flex-col items-center px-3">
+                <button
+                  type="button"
+                  onClick={() => setDockCollapsed((v) => !v)}
+                  className="pointer-events-auto mb-1.5 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/95 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:text-[#0284C7] transition-colors"
+                >
+                  {dockCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  <span>{dockCollapsed ? 'Show Simulation Controls' : 'Hide Simulation Controls'}</span>
+                </button>
+
+                {!dockCollapsed && (
+                  <div className="pointer-events-auto w-full max-w-[900px] rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-xs px-4 py-3.5 shadow-lg space-y-3 animate-panel-enter">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={togglePlay}
+                          className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#16A34A] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#15803D] transition-colors whitespace-nowrap"
+                        >
+                          {isRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                          <span>{isRunning ? 'Pause' : 'Start Simulation'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={stepOnce}
+                          disabled={isRunning}
+                          className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors whitespace-nowrap"
+                        >
+                          <SkipForward className="h-3.5 w-3.5" />
+                          <span>Step +1</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={autoSeedIgnition}
+                          className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors whitespace-nowrap"
+                        >
+                          <Flame className="h-3.5 w-3.5" />
+                          <span>Seed Fire</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetSimulation}
+                          className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors whitespace-nowrap"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          <span>Reset</span>
+                        </button>
+                      </div>
+
+                      {renderSpreadSelects()}
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-3">
+                      {renderWeatherSliders()}
+                    </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </section>
 
+          {/* Mobile Simulation Controls + Collapsible Secondary Weather Drawer */}
+          {isInitialized && (
+            <section className="md:hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs space-y-3.5">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="col-span-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-[#16A34A] px-4 py-2 text-xs font-semibold text-white hover:bg-[#15803D] active:scale-[0.99] transition-all"
+                >
+                  {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  <span>{isRunning ? 'Pause Simulation' : 'Start Simulation'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={stepOnce}
+                  disabled={isRunning}
+                  className="inline-flex min-h-[42px] items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                >
+                  <SkipForward className="h-3.5 w-3.5" />
+                  <span>Step +1</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={autoSeedIgnition}
+                  className="inline-flex min-h-[42px] items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
+                >
+                  <Flame className="h-3.5 w-3.5" />
+                  <span>Seed Fire</span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setMobileParamsOpen((v) => !v)}
+                  className="flex-1 inline-flex min-h-[40px] items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                  aria-expanded={mobileParamsOpen}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-[#0284C7]" />
+                    <span>Weather & Spread Controls</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-slate-500 tabular-nums">
+                    {config.windSpeedKmh}km/h · {config.humidityPct}%
+                    {mobileParamsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={resetSimulation}
+                  className="inline-flex min-h-[40px] items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  aria-label="Reset simulation"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Reset</span>
+                </button>
+              </div>
+
+              {mobileParamsOpen && (
+                <div className="space-y-4 pt-2 border-t border-slate-100 animate-panel-enter">
+                  {renderWeatherSliders()}
+                  <div className="pt-1">{renderSpreadSelects()}</div>
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+
+        {/* Right Side Panel: Clean Block Tooltip Inspector + Propagation Chart */}
+        <aside className="xl:col-span-4 flex flex-col gap-4 sm:gap-5">
+          {/* Block Inspector Tooltip Card */}
+          <section className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">Terrain Block Inspector</h2>
+                <span className="font-mono text-[11px] font-medium text-[#0284C7] tabular-nums">
+                  {activeCell ? activeCell.id : 'Tap or hover a terrain block'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileInspectorOpen((v) => !v)}
+                className="sm:hidden inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                aria-expanded={mobileInspectorOpen}
+                aria-label="Toggle block inspector"
+              >
+                {mobileInspectorOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+            </div>
+
+            <div className={`${mobileInspectorOpen ? 'block' : 'hidden sm:block'} space-y-4`}>
+              {!activeCell ? (
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Move your pointer over or tap any block inside the 3D isometric terrain to inspect elevation, fuel density, moisture index, temperature, and land-cover class.
+                </p>
+              ) : (
+                <>
+                  <dl className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs tabular-nums">
+                    <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                      <dt className="text-slate-500">Coordinates (Row, Col)</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold text-slate-900">
+                        ({activeCell.row}, {activeCell.col})
+                      </dd>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                      <dt className="text-slate-500">Block Status</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold text-[#0284C7] capitalize">
+                        {activeCell.state}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                      <dt className="text-slate-500">Elevation</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold text-slate-900">
+                        {fmtNum(activeCell.elevation, ' m', 1)}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                      <dt className="text-slate-500">Fuel Density</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold text-[#16A34A]">
+                        {fmtNum(activeCell.fuelDensity, '', 3)}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                      <dt className="text-slate-500">Moisture Index</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold text-[#0284C7]">
+                        {fmtNum(activeCell.moistureIndex, '', 3)}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                      <dt className="text-slate-500">Surface Temp</dt>
+                      <dd className="mt-1 font-mono text-sm font-semibold text-amber-600">
+                        {fmtNum(activeCell.temperature, ' °C', 1)}
+                      </dd>
+                    </div>
+                    <div className="col-span-2 rounded-lg border border-slate-100 bg-slate-50/80 p-3 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <dt className="text-slate-500">Land Cover / Biome</dt>
+                        <dd className="mt-0.5 text-xs font-semibold text-slate-900">{activeCell.biome}</dd>
+                      </div>
+                      <div className="sm:text-right">
+                        <dt className="text-slate-500">GPS Lat / Lon</dt>
+                        <dd className="mt-0.5 font-mono text-[11px] text-slate-700">
+                          {activeCell.lat !== null && activeCell.lon !== null
+                            ? `${activeCell.lat.toFixed(4)}, ${activeCell.lon.toFixed(4)}`
+                            : '—'}
+                        </dd>
+                      </div>
+                    </div>
+                  </dl>
+
+                  {isInitialized && activeCell.state !== 'dormant' && (
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => igniteCell(activeCell.id)}
+                        className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                      >
+                        <Flame className="h-3.5 w-3.5" />
+                        <span>Ignite Block</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleFirebreak(activeCell.id)}
+                        className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-[#0284C7] hover:bg-sky-100 transition-colors"
+                      >
+                        <Shield className="h-3.5 w-3.5" />
+                        <span>{activeCell.state === 'firebreak' ? 'Remove Break' : 'Add Firebreak'}</span>
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+
           {/* Propagation Trajectory Card */}
-          <section className="flex-1 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col">
+          <section className="flex-1 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
               <h2 className="text-sm font-semibold text-slate-900">Fire Progression Curve</h2>
               <span className="text-xs text-slate-500">Blocks over time</span>
             </div>
-            <div className="h-[210px] w-full">
+            <div className="h-[200px] sm:h-[215px] w-full">
               {!isInitialized ? (
                 <div className="flex h-full items-center justify-center text-xs text-slate-400 text-center px-4">
                   Upload a forest dataset to track active ignition and containment curves.

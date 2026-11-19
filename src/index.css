@@ -13,15 +13,84 @@
     color: #0f172a;
     background-color: #f8fafc;
     color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  button,
+  a,
+  select,
+  input,
+  textarea {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :focus-visible {
+    outline: 2px solid #0284c7;
+    outline-offset: 2px;
   }
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Hide scrollbars cleanly for horizontal tab rails */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth compositor-only panel & modal entrance */
+@keyframes panelEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.985) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-panel-enter {
+  animation: panelEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-modal-enter {
+  animation: modalEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-panel-enter,
+  .animate-modal-enter {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Subtle SaaS scrollbar */
@@ -34,40 +103,58 @@
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Smooth ocean-blue SaaS range sliders */
+/* Smooth ocean-blue SaaS range sliders with touch-friendly thumb */
 input[type='range'].saas-slider {
   -webkit-appearance: none;
   appearance: none;
-  height: 5px;
+  height: 6px;
   border-radius: 999px;
   background: #e2e8f0;
   outline: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+input[type='range'].saas-slider:hover {
+  background: #cbd5e1;
 }
 
 input[type='range'].saas-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
   background: #0284c7;
-  border: 2px solid #ffffff;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.22);
   cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms ease;
+}
+
+input[type='range'].saas-slider::-webkit-slider-thumb:hover {
+  background: #0369a1;
+  transform: scale(1.1);
 }
 
 input[type='range'].saas-slider::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
   background: #0284c7;
-  border: 2px solid #ffffff;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.22);
   cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms ease;
+}
+
+input[type='range'].saas-slider::-moz-range-thumb:hover {
+  background: #0369a1;
+  transform: scale(1.1);
 }

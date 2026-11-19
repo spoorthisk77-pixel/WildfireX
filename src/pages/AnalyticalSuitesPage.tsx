@@ -3,11 +3,14 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import {
   Activity,
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
   Flame,
   MapPin,
   Network,
   Route,
   ShieldCheck,
+  SlidersHorizontal,
   Truck,
   Upload,
 } from 'lucide-react';
@@ -56,6 +59,7 @@ export function AnalyticalSuitesPage() {
   } = useEngine();
 
   const [activeTab, setActiveTab] = useState<AnalyticalTabId>('resource-deployment');
+  const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
 
   // 1. Resource Deployment state
   const [waterTankers, setWaterTankers] = useState(14);
@@ -212,7 +216,7 @@ export function AnalyticalSuitesPage() {
 
   if (!isInitialized) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm space-y-4">
+      <div className="rounded-xl border border-slate-200/90 bg-white p-8 sm:p-12 text-center shadow-xs space-y-4 animate-panel-enter">
         <div className="text-base font-semibold text-slate-900">
           Please upload a forest dataset (CSV, JSON, GeoJSON) to initialize simulation
         </div>
@@ -223,7 +227,7 @@ export function AnalyticalSuitesPage() {
           <button
             type="button"
             onClick={openUploadModal}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#0284C7] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0369A1] transition-colors"
+            className="inline-flex min-h-[42px] items-center gap-2 rounded-lg bg-[#0284C7] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0369A1] transition-colors"
           >
             <Upload className="h-3.5 w-3.5" />
             <span>Import Forest Dataset</span>
@@ -231,7 +235,7 @@ export function AnalyticalSuitesPage() {
           <button
             type="button"
             onClick={() => navigate('/ingestion')}
-            className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            className="min-h-[42px] rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
           >
             Open Dataset Portal
           </button>
@@ -241,11 +245,11 @@ export function AnalyticalSuitesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6 animate-panel-enter">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900">
             Operational Analytics & Decision Suites
           </h1>
           <p className="mt-0.5 text-xs text-slate-500">
@@ -254,8 +258,30 @@ export function AnalyticalSuitesPage() {
         </div>
       </div>
 
-      {/* Intuitive Tab Strip */}
-      <div className="flex flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xs">
+      {/* Mobile Compact Suite Selector Dropdown (< sm) */}
+      <div className="sm:hidden">
+        <label className="block text-xs font-medium text-slate-500 mb-1.5" htmlFor="mobile-suite-select">
+          Analytical Suite
+        </label>
+        <select
+          id="mobile-suite-select"
+          value={activeTab}
+          onChange={(e) => {
+            setActiveTab(e.target.value as AnalyticalTabId);
+            setMobileControlsOpen(false);
+          }}
+          className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-2xs focus:border-[#0284C7] focus:outline-none"
+        >
+          {ANALYTICS_TABS.map((tab) => (
+            <option key={tab.id} value={tab.id}>
+              {tab.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Horizontal Scrollable Tab Strip (sm and above) */}
+      <div className="hidden sm:flex overflow-x-auto no-scrollbar gap-1.5 rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-2xs">
         {ANALYTICS_TABS.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -263,10 +289,13 @@ export function AnalyticalSuitesPage() {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${
+              onClick={() => {
+                setActiveTab(tab.id);
+                setMobileControlsOpen(false);
+              }}
+              className={`inline-flex min-h-[38px] items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all duration-150 whitespace-nowrap shrink-0 ${
                 active
-                  ? 'bg-[#0284C7] text-white shadow-2xs'
+                  ? 'bg-[#0284C7] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
@@ -279,79 +308,130 @@ export function AnalyticalSuitesPage() {
 
       {/* TAB 1: Resource Deployment */}
       {activeTab === 'resource-deployment' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <section className="lg:col-span-4 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-            <h2 className="text-sm font-semibold text-slate-900">Available Suppression Fleet</h2>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Adjust available response units to automatically balance coverage across high-risk forest sectors.
-            </p>
-
-            <div className="space-y-4 text-xs">
+        <div key="resource-deployment" className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-panel-enter">
+          <section className="lg:col-span-4 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
+            <button
+              type="button"
+              onClick={() => setMobileControlsOpen((v) => !v)}
+              className="w-full lg:pointer-events-none flex items-center justify-between gap-2 text-left"
+              aria-expanded={mobileControlsOpen}
+            >
               <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Water Tankers</span>
-                  <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{waterTankers} units</span>
-                </div>
-                <input
-                  type="range"
-                  min={2}
-                  max={40}
-                  value={waterTankers}
-                  onChange={(e) => setWaterTankers(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
+                <h2 className="text-sm font-semibold text-slate-900">Available Suppression Fleet</h2>
+                <p className="lg:hidden mt-0.5 text-[11px] text-slate-500 tabular-nums">
+                  {waterTankers} Tankers · {reconDrones} Drones · {groundCrews} Crews · {aerialDrops} Aircraft
+                </p>
               </div>
+              <span className="lg:hidden inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-[#0284C7]">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                {mobileControlsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </span>
+            </button>
 
-              <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Reconnaissance Drones</span>
-                  <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{reconDrones} units</span>
-                </div>
-                <input
-                  type="range"
-                  min={1}
-                  max={30}
-                  value={reconDrones}
-                  onChange={(e) => setReconDrones(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
-              </div>
+            <div className={`${mobileControlsOpen ? 'block' : 'hidden lg:block'} space-y-4`}>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Adjust available response units to automatically balance coverage across high-risk forest sectors.
+              </p>
 
-              <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Ground Hotshot Crews</span>
-                  <span className="font-mono font-semibold text-[#16A34A] tabular-nums">{groundCrews} teams</span>
+              <div className="space-y-4 text-xs">
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Water Tankers</span>
+                    <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{waterTankers} units</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={2}
+                    max={40}
+                    value={waterTankers}
+                    onChange={(e) => setWaterTankers(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={2}
-                  max={50}
-                  value={groundCrews}
-                  onChange={(e) => setGroundCrews(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
-              </div>
 
-              <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Aerial Retardant Aircraft</span>
-                  <span className="font-mono font-semibold text-amber-600 tabular-nums">{aerialDrops} aircraft</span>
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Reconnaissance Drones</span>
+                    <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{reconDrones} units</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={30}
+                    value={reconDrones}
+                    onChange={(e) => setReconDrones(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={16}
-                  value={aerialDrops}
-                  onChange={(e) => setAerialDrops(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
+
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Ground Hotshot Crews</span>
+                    <span className="font-mono font-semibold text-[#16A34A] tabular-nums">{groundCrews} teams</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={2}
+                    max={50}
+                    value={groundCrews}
+                    onChange={(e) => setGroundCrews(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Aerial Retardant Aircraft</span>
+                    <span className="font-mono font-semibold text-amber-600 tabular-nums">{aerialDrops} aircraft</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={16}
+                    value={aerialDrops}
+                    onChange={(e) => setAerialDrops(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
+                </div>
               </div>
             </div>
           </section>
 
-          <section className="lg:col-span-8 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-5">
+          <section className="lg:col-span-8 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-5">
             <h2 className="text-sm font-semibold text-slate-900">Sector Asset Allocation & Coverage</h2>
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
+
+            {/* Clean Mobile Sector Cards */}
+            <div className="sm:hidden space-y-2.5 tabular-nums">
+              {sectorStats.map((sec) => (
+                <div key={sec.name} className="rounded-lg border border-slate-200 bg-slate-50/60 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-900">{sec.name}</span>
+                    <span className="font-mono text-xs font-bold text-[#16A34A]">{sec.coveragePct}% coverage</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-600">
+                    <div className="flex justify-between">
+                      <span>High-Risk</span>
+                      <span className="font-mono font-semibold text-slate-900">{sec.highRisk}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tankers</span>
+                      <span className="font-mono font-semibold text-[#0284C7]">{sec.assignedTankers}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Drones</span>
+                      <span className="font-mono font-semibold text-slate-800">{sec.assignedDrones}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Ground Crews</span>
+                      <span className="font-mono font-semibold text-[#16A34A]">{sec.assignedCrews}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Aligned Table */}
+            <div className="hidden sm:block overflow-x-auto rounded-lg border border-slate-200">
               <table className="w-full text-left text-xs tabular-nums">
                 <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
                   <tr>
@@ -365,7 +445,7 @@ export function AnalyticalSuitesPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {sectorStats.map((sec) => (
-                    <tr key={sec.name} className="hover:bg-slate-50/70">
+                    <tr key={sec.name} className="hover:bg-slate-50/70 transition-colors">
                       <td className="px-4 py-3 font-medium text-slate-900">{sec.name}</td>
                       <td className="px-4 py-3 text-right font-mono text-slate-700">{sec.highRisk}</td>
                       <td className="px-4 py-3 text-right font-mono text-[#0284C7] font-semibold">
@@ -384,7 +464,7 @@ export function AnalyticalSuitesPage() {
               </table>
             </div>
 
-            <div className="h-60">
+            <div className="h-56 sm:h-60">
               <LightBarChart
                 yLabel="Units Assigned"
                 data={{
@@ -418,87 +498,106 @@ export function AnalyticalSuitesPage() {
 
       {/* TAB 2: Ignition Risk Rules */}
       {activeTab === 'ignition-rules' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <section className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-            <h2 className="text-sm font-semibold text-slate-900">Environmental Trigger Thresholds</h2>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Tune operational safety thresholds to scan the imported forest terrain for high-risk ignition zones.
-            </p>
-
-            <div className="space-y-4 text-xs">
+        <div key="ignition-rules" className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-panel-enter">
+          <section className="lg:col-span-5 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
+            <button
+              type="button"
+              onClick={() => setMobileControlsOpen((v) => !v)}
+              className="w-full lg:pointer-events-none flex items-center justify-between gap-2 text-left"
+              aria-expanded={mobileControlsOpen}
+            >
               <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Dense Canopy Fuel Threshold</span>
-                  <span className="font-mono font-semibold text-[#16A34A] tabular-nums">≥ {fuelCutoff.toFixed(2)}</span>
-                </div>
-                <input
-                  type="range"
-                  min={0.25}
-                  max={0.9}
-                  step={0.05}
-                  value={fuelCutoff}
-                  onChange={(e) => setFuelCutoff(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
+                <h2 className="text-sm font-semibold text-slate-900">Environmental Trigger Thresholds</h2>
+                <p className="lg:hidden mt-0.5 text-[11px] text-slate-500 tabular-nums">
+                  Fuel ≥ {fuelCutoff.toFixed(2)} · RH ≤ {humidityCutoff}% · Wind ≥ {windCutoff} km/h
+                </p>
               </div>
+              <span className="lg:hidden inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-[#0284C7]">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                {mobileControlsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </span>
+            </button>
 
-              <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Low Humidity Warning</span>
-                  <span className="font-mono font-semibold text-[#0284C7] tabular-nums">≤ {humidityCutoff}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={15}
-                  max={75}
-                  step={5}
-                  value={humidityCutoff}
-                  onChange={(e) => setHumidityCutoff(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
-              </div>
+            <div className={`${mobileControlsOpen ? 'block' : 'hidden lg:block'} space-y-4`}>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Tune operational safety thresholds to scan the imported forest terrain for high-risk ignition zones.
+              </p>
 
-              <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">High Wind Alert</span>
-                  <span className="font-mono font-semibold text-amber-600 tabular-nums">≥ {windCutoff} km/h</span>
+              <div className="space-y-4 text-xs">
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Dense Canopy Fuel Threshold</span>
+                    <span className="font-mono font-semibold text-[#16A34A] tabular-nums">≥ {fuelCutoff.toFixed(2)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0.25}
+                    max={0.9}
+                    step={0.05}
+                    value={fuelCutoff}
+                    onChange={(e) => setFuelCutoff(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={10}
-                  max={55}
-                  step={5}
-                  value={windCutoff}
-                  onChange={(e) => setWindCutoff(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
-              </div>
 
-              <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Surface Heat Alert</span>
-                  <span className="font-mono font-semibold text-red-600 tabular-nums">≥ {tempCutoff}°C</span>
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Low Humidity Warning</span>
+                    <span className="font-mono font-semibold text-[#0284C7] tabular-nums">≤ {humidityCutoff}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={15}
+                    max={75}
+                    step={5}
+                    value={humidityCutoff}
+                    onChange={(e) => setHumidityCutoff(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={20}
-                  max={45}
-                  step={1}
-                  value={tempCutoff}
-                  onChange={(e) => setTempCutoff(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
+
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">High Wind Alert</span>
+                    <span className="font-mono font-semibold text-amber-600 tabular-nums">≥ {windCutoff} km/h</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={10}
+                    max={55}
+                    step={5}
+                    value={windCutoff}
+                    onChange={(e) => setWindCutoff(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Surface Heat Alert</span>
+                    <span className="font-mono font-semibold text-red-600 tabular-nums">≥ {tempCutoff}°C</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={20}
+                    max={45}
+                    step={1}
+                    value={tempCutoff}
+                    onChange={(e) => setTempCutoff(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => {
                   setHighlightedCellIds(new Set(riskRuleMatches.critical));
                   navigate('/');
                 }}
-                className="w-full rounded-lg bg-[#0284C7] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#0369A1] transition-colors"
+                className="w-full min-h-[42px] rounded-lg bg-[#0284C7] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#0369A1] transition-colors"
               >
                 Highlight {riskRuleMatches.critical.length} Critical Blocks on 3D Arena
               </button>
@@ -506,7 +605,7 @@ export function AnalyticalSuitesPage() {
           </section>
 
           <section className="lg:col-span-7 space-y-4">
-            <div className="rounded-xl border border-red-200 bg-white p-5 shadow-2xs">
+            <div className="rounded-xl border border-red-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
@@ -514,7 +613,7 @@ export function AnalyticalSuitesPage() {
                     <h3 className="text-sm font-semibold text-slate-900">
                       High Risk: Dense Canopy + Dry Conditions + Elevated Wind or Heat
                     </h3>
-                    <p className="mt-1 text-xs text-slate-600">
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">
                       Triggered when Fuel Density ≥ {fuelCutoff.toFixed(2)}, Humidity ≤ {humidityCutoff}%, and either Wind ≥ {windCutoff} km/h or Temperature ≥ {tempCutoff}°C.
                     </p>
                   </div>
@@ -528,7 +627,7 @@ export function AnalyticalSuitesPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-amber-200 bg-white p-5 shadow-2xs">
+            <div className="rounded-xl border border-amber-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <Flame className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
@@ -536,7 +635,7 @@ export function AnalyticalSuitesPage() {
                     <h3 className="text-sm font-semibold text-slate-900">
                       Moderate Risk: Dry Surface Vegetation or Heavy Biomass Accumulation
                     </h3>
-                    <p className="mt-1 text-xs text-slate-600">
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">
                       Triggered when terrain carries significant dry scrubland or moderate fuel accumulation without simultaneous peak wind gusts.
                     </p>
                   </div>
@@ -550,7 +649,7 @@ export function AnalyticalSuitesPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-emerald-200 bg-white p-5 shadow-2xs">
+            <div className="rounded-xl border border-emerald-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="h-5 w-5 text-[#16A34A] shrink-0 mt-0.5" />
@@ -558,7 +657,7 @@ export function AnalyticalSuitesPage() {
                     <h3 className="text-sm font-semibold text-slate-900">
                       Natural Containment: Riparian Channels, Firebreaks & High Moisture
                     </h3>
-                    <p className="mt-1 text-xs text-slate-600">
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">
                       Blocks containing water corridors, engineered firebreaks, or moisture index ≥ 0.70 that naturally slow flame propagation.
                     </p>
                   </div>
@@ -577,51 +676,70 @@ export function AnalyticalSuitesPage() {
 
       {/* TAB 3: Spread Forecasting */}
       {activeTab === 'spread-forecasting' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <section className="lg:col-span-4 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-            <h2 className="text-sm font-semibold text-slate-900">Spread Horizon Controls</h2>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Projects cumulative burned area in acres based on your active Wind Speed ({config.windSpeedKmh} km/h) and Relative Humidity ({config.humidityPct}%).
-            </p>
-
-            <div className="text-xs space-y-3">
+        <div key="spread-forecasting" className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-panel-enter">
+          <section className="lg:col-span-4 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
+            <button
+              type="button"
+              onClick={() => setMobileControlsOpen((v) => !v)}
+              className="w-full lg:pointer-events-none flex items-center justify-between gap-2 text-left"
+              aria-expanded={mobileControlsOpen}
+            >
               <div>
-                <div className="flex justify-between text-slate-700 mb-1.5">
-                  <span className="font-medium">Forecast Window</span>
-                  <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{forecastSteps} steps</span>
-                </div>
-                <input
-                  type="range"
-                  min={6}
-                  max={24}
-                  value={forecastSteps}
-                  onChange={(e) => setForecastSteps(Number(e.target.value))}
-                  className="saas-slider w-full"
-                />
+                <h2 className="text-sm font-semibold text-slate-900">Spread Horizon Controls</h2>
+                <p className="lg:hidden mt-0.5 text-[11px] text-slate-500 tabular-nums">
+                  {forecastSteps} steps · Est. {forecastSeries[forecastSeries.length - 1]?.projectedAcres.toLocaleString()} ac
+                </p>
               </div>
+              <span className="lg:hidden inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-[#0284C7]">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                {mobileControlsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </span>
+            </button>
 
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-3.5 space-y-1.5 tabular-nums">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Projected Final Burned Area</span>
-                  <span className="font-mono font-semibold text-red-600">
-                    {forecastSeries[forecastSeries.length - 1]?.projectedAcres.toLocaleString()} ac
-                  </span>
+            <div className={`${mobileControlsOpen ? 'block' : 'hidden lg:block'} space-y-4`}>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Projects cumulative burned area in acres based on your active Wind Speed ({config.windSpeedKmh} km/h) and Relative Humidity ({config.humidityPct}%).
+              </p>
+
+              <div className="text-xs space-y-3">
+                <div>
+                  <div className="flex justify-between text-slate-700 mb-1.5">
+                    <span className="font-medium">Forecast Window</span>
+                    <span className="font-mono font-semibold text-[#0284C7] tabular-nums">{forecastSteps} steps</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={6}
+                    max={24}
+                    value={forecastSteps}
+                    onChange={(e) => setForecastSteps(Number(e.target.value))}
+                    className="saas-slider w-full"
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Active Wind Factor</span>
-                  <span className="font-mono font-semibold text-slate-900">{config.windSpeedKmh} km/h</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Atmospheric Humidity</span>
-                  <span className="font-mono font-semibold text-[#16A34A]">{config.humidityPct}% RH</span>
+
+                <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5 space-y-1.5 tabular-nums">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Projected Final Burned Area</span>
+                    <span className="font-mono font-semibold text-red-600">
+                      {forecastSeries[forecastSeries.length - 1]?.projectedAcres.toLocaleString()} ac
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Active Wind Factor</span>
+                    <span className="font-mono font-semibold text-slate-900">{config.windSpeedKmh} km/h</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Atmospheric Humidity</span>
+                    <span className="font-mono font-semibold text-[#16A34A]">{config.humidityPct}% RH</span>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="lg:col-span-8 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+          <section className="lg:col-span-8 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
             <h2 className="text-sm font-semibold text-slate-900">Cumulative Burned Acreage Projection</h2>
-            <div className="h-72">
+            <div className="h-60 sm:h-72">
               <LightLineChart
                 yLabel="Burned Acres"
                 data={{
@@ -634,7 +752,7 @@ export function AnalyticalSuitesPage() {
                       backgroundColor: 'rgba(2, 132, 199, 0.10)',
                       fill: true,
                       borderWidth: 2,
-                      tension: 0.25,
+                      tension: 0.28,
                     },
                     ...(telemetryHistory.length > 0
                       ? [
@@ -644,7 +762,7 @@ export function AnalyticalSuitesPage() {
                             borderColor: '#16A34A',
                             borderDash: [5, 4],
                             borderWidth: 2,
-                            tension: 0.25,
+                            tension: 0.28,
                           },
                         ]
                       : []),
@@ -658,22 +776,23 @@ export function AnalyticalSuitesPage() {
 
       {/* TAB 4: Network & Zoning */}
       {activeTab === 'network-zoning' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <section className="lg:col-span-6 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+        <div key="network-zoning" className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-panel-enter">
+          <section className="lg:col-span-6 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-sm font-semibold text-slate-900">6×6 Sector Hazard Zoning Map</h2>
                 <p className="text-xs text-slate-500">Adjacent forest blocks grouped into non-interfering response zones.</p>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500">Sector Origin:</span>
+                <span className="text-slate-500">Origin:</span>
                 <input
                   type="number"
                   min={0}
                   max={Math.max(0, rows - 6)}
                   value={patchStartRow}
                   onChange={(e) => setPatchStartRow(Number(e.target.value))}
-                  className="w-14 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-slate-800"
+                  aria-label="Sector origin row"
+                  className="w-14 min-h-[36px] rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-slate-800"
                 />
                 <input
                   type="number"
@@ -681,12 +800,13 @@ export function AnalyticalSuitesPage() {
                   max={Math.max(0, cols - 6)}
                   value={patchStartCol}
                   onChange={(e) => setPatchStartCol(Number(e.target.value))}
-                  className="w-14 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-slate-800"
+                  aria-label="Sector origin column"
+                  className="w-14 min-h-[36px] rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-slate-800"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-6 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="grid grid-cols-6 gap-1.5 sm:gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
               {patchGraph.nodeCells.map((cell, idx) => {
                 const tier = Math.min(3, patchGraph.chromaticColors[idx] ?? 0);
                 const inactive = cell.state === 'dormant' || cell.state === 'water';
@@ -699,11 +819,13 @@ export function AnalyticalSuitesPage() {
                         ? { backgroundColor: '#E0F2FE', borderColor: '#BAE6FD', color: '#0369A1' }
                         : { backgroundColor: palette.bg, borderColor: palette.border, color: palette.text }
                     }
-                    className="aspect-square rounded-lg border flex flex-col items-center justify-center text-[10px] font-semibold tabular-nums"
+                    className="aspect-square rounded-lg border flex flex-col items-center justify-center text-[9px] sm:text-[10px] font-semibold tabular-nums transition-transform hover:scale-[1.03]"
                     title={`${cell.id} · ${inactive ? 'Water / Break' : palette.label}`}
                   >
-                    <span>{inactive ? 'Water' : palette.label.split(' ')[0]}</span>
-                    <span className="font-mono text-[9px] font-normal opacity-80">
+                    <span className="truncate max-w-full px-0.5">
+                      {inactive ? 'Water' : palette.label.split(' ')[0]}
+                    </span>
+                    <span className="font-mono text-[8px] sm:text-[9px] font-normal opacity-80">
                       {cell.row},{cell.col}
                     </span>
                   </div>
@@ -712,20 +834,20 @@ export function AnalyticalSuitesPage() {
             </div>
           </section>
 
-          <section className="lg:col-span-6 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-5">
+          <section className="lg:col-span-6 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-5">
             <h2 className="text-sm font-semibold text-slate-900">Hazard Tier Breakdown & Connectivity</h2>
-            <div className="grid grid-cols-3 gap-3 text-xs tabular-nums">
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                <div className="text-slate-500">Inspected Blocks</div>
-                <div className="mt-1 font-mono text-xl font-bold text-slate-900">{patchGraph.nodeCells.length}</div>
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 text-xs tabular-nums">
+              <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                <div className="text-[11px] sm:text-xs text-slate-500">Inspected Blocks</div>
+                <div className="mt-1 font-mono text-lg sm:text-xl font-bold text-slate-900">{patchGraph.nodeCells.length}</div>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                <div className="text-slate-500">Spread Links</div>
-                <div className="mt-1 font-mono text-xl font-bold text-[#0284C7]">{patchGraph.edgeCount}</div>
+              <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                <div className="text-[11px] sm:text-xs text-slate-500">Spread Links</div>
+                <div className="mt-1 font-mono text-lg sm:text-xl font-bold text-[#0284C7]">{patchGraph.edgeCount}</div>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                <div className="text-slate-500">Distinct Zones</div>
-                <div className="mt-1 font-mono text-xl font-bold text-[#16A34A]">{patchGraph.chromaticNumberUsed}</div>
+              <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3">
+                <div className="text-[11px] sm:text-xs text-slate-500">Distinct Zones</div>
+                <div className="mt-1 font-mono text-lg sm:text-xl font-bold text-[#16A34A]">{patchGraph.chromaticNumberUsed}</div>
               </div>
             </div>
 
@@ -738,62 +860,64 @@ export function AnalyticalSuitesPage() {
 
       {/* TAB 5: Evacuation & Routing */}
       {activeTab === 'evacuation-routing' && (
-        <div className="space-y-5">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs flex flex-wrap items-center justify-between gap-4 text-xs">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex rounded-lg bg-slate-100 p-1">
+        <div key="evacuation-routing" className="space-y-5 animate-panel-enter">
+          <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 text-xs">
+            <div className="flex flex-col sm:flex-row flex-wrap sm:items-center gap-3">
+              <div className="grid grid-cols-2 sm:inline-flex rounded-lg bg-slate-100 p-1">
                 <button
                   type="button"
                   onClick={() => setRouteViewMode('evacuation')}
-                  className={`rounded-md px-3 py-1.5 font-semibold transition-colors ${
-                    routeViewMode === 'evacuation' ? 'bg-white text-[#0284C7] shadow-2xs' : 'text-slate-600'
+                  className={`rounded-md px-3 py-2 sm:py-1.5 font-semibold transition-all whitespace-nowrap ${
+                    routeViewMode === 'evacuation' ? 'bg-white text-[#0284C7] shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Civilian Evacuation Route
+                  Evacuation Route
                 </button>
                 <button
                   type="button"
                   onClick={() => setRouteViewMode('firebreak')}
-                  className={`rounded-md px-3 py-1.5 font-semibold transition-colors ${
-                    routeViewMode === 'firebreak' ? 'bg-white text-[#16A34A] shadow-2xs' : 'text-slate-600'
+                  className={`rounded-md px-3 py-2 sm:py-1.5 font-semibold transition-all whitespace-nowrap ${
+                    routeViewMode === 'firebreak' ? 'bg-white text-[#16A34A] shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Firebreak Corridor Plan
+                  Firebreak Corridor
                 </button>
               </div>
 
-              <label className="flex items-center gap-2">
-                <span className="text-slate-500">Origin:</span>
-                <select
-                  value={routeSourceIdx}
-                  onChange={(e) => setRouteSourceIdx(Number(e.target.value))}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-slate-800"
-                >
-                  {patchGraph.nodeIds.map((id, i) => (
-                    <option key={id} value={i}>
-                      {id}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="grid grid-cols-2 sm:flex items-center gap-2.5">
+                <label className="flex items-center gap-1.5">
+                  <span className="text-slate-500 shrink-0">Origin:</span>
+                  <select
+                    value={routeSourceIdx}
+                    onChange={(e) => setRouteSourceIdx(Number(e.target.value))}
+                    className="w-full sm:w-auto min-h-[38px] rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-slate-800"
+                  >
+                    {patchGraph.nodeIds.map((id, i) => (
+                      <option key={id} value={i}>
+                        {id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-              <label className="flex items-center gap-2">
-                <span className="text-slate-500">Safe Hub:</span>
-                <select
-                  value={routeTargetIdx}
-                  onChange={(e) => setRouteTargetIdx(Number(e.target.value))}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-slate-800"
-                >
-                  {patchGraph.nodeIds.map((id, i) => (
-                    <option key={id} value={i}>
-                      {id}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                <label className="flex items-center gap-1.5">
+                  <span className="text-slate-500 shrink-0">Hub:</span>
+                  <select
+                    value={routeTargetIdx}
+                    onChange={(e) => setRouteTargetIdx(Number(e.target.value))}
+                    className="w-full sm:w-auto min-h-[38px] rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-slate-800"
+                  >
+                    {patchGraph.nodeIds.map((id, i) => (
+                      <option key={id} value={i}>
+                        {id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
             </div>
 
-            <div className="text-slate-600 tabular-nums">
+            <div className="text-slate-600 tabular-nums border-t lg:border-t-0 border-slate-100 pt-2.5 lg:pt-0">
               {routeViewMode === 'evacuation' ? (
                 <span>
                   Safest Route Distance:{' '}
@@ -810,9 +934,9 @@ export function AnalyticalSuitesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
             {/* Clean Visual Route Map */}
-            <section className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+            <section className="lg:col-span-5 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                 <MapPin className="h-4 w-4 text-[#0284C7]" />
                 <span>
@@ -820,7 +944,7 @@ export function AnalyticalSuitesPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-6 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="grid grid-cols-6 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
                 {patchGraph.nodeCells.map((cell, idx) => {
                   const onEvacPath = dijkstraResult.pathIndices.includes(idx);
                   const onMstCorridor = kruskalResult.mstEdges.some((e) => e.uIdx === idx || e.vIdx === idx);
@@ -830,7 +954,7 @@ export function AnalyticalSuitesPage() {
                   return (
                     <div
                       key={cell.id}
-                      className={`aspect-square rounded-lg flex items-center justify-center font-mono text-[10px] font-semibold border ${
+                      className={`aspect-square rounded-lg flex items-center justify-center font-mono text-[9px] sm:text-[10px] font-semibold border transition-colors ${
                         isStart && routeViewMode === 'evacuation'
                           ? 'bg-[#0284C7] text-white border-[#0369A1]'
                           : isEnd && routeViewMode === 'evacuation'
@@ -858,7 +982,7 @@ export function AnalyticalSuitesPage() {
             </section>
 
             {/* Step-by-Step Readable Dispatch Itinerary */}
-            <section className="lg:col-span-7 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+            <section className="lg:col-span-7 rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
               <h3 className="text-sm font-semibold text-slate-900">
                 {routeViewMode === 'evacuation'
                   ? 'Step-by-Step Evacuation Dispatch Instructions'
@@ -877,9 +1001,12 @@ export function AnalyticalSuitesPage() {
                       const isFirst = stepIdx === 0;
                       const isLast = stepIdx === dijkstraResult.pathLabels.length - 1;
                       return (
-                        <div key={label} className="flex items-center justify-between px-4 py-2.5 text-xs">
+                        <div
+                          key={label}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 px-3.5 sm:px-4 py-2.5 text-xs"
+                        >
                           <div className="flex items-center gap-3">
-                            <span className="font-mono font-semibold text-[#0284C7] w-14">
+                            <span className="font-mono font-semibold text-[#0284C7] w-14 shrink-0">
                               Step {stepIdx + 1}
                             </span>
                             <span className="font-medium text-slate-900">
@@ -890,7 +1017,7 @@ export function AnalyticalSuitesPage() {
                                   : `Advance through low-risk corridor ${label}`}
                             </span>
                           </div>
-                          <span className="text-slate-500 tabular-nums">
+                          <span className="text-[11px] sm:text-xs text-slate-500 tabular-nums pl-17 sm:pl-0">
                             {cell?.biome} · Fuel {(cell?.fuelDensity ?? 0).toFixed(2)}
                           </span>
                         </div>
@@ -901,16 +1028,21 @@ export function AnalyticalSuitesPage() {
               ) : (
                 <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 rounded-lg border border-slate-200">
                   {kruskalResult.mstEdges.slice(0, 18).map((edge, idx) => (
-                    <div key={`${edge.uIdx}-${edge.vIdx}`} className="flex items-center justify-between px-4 py-2.5 text-xs tabular-nums">
+                    <div
+                      key={`${edge.uIdx}-${edge.vIdx}`}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 px-3.5 sm:px-4 py-2.5 text-xs tabular-nums"
+                    >
                       <div className="flex items-center gap-3">
-                        <span className="font-mono font-semibold text-[#16A34A] w-16">
+                        <span className="font-mono font-semibold text-[#16A34A] w-16 shrink-0">
                           Break #{idx + 1}
                         </span>
                         <span className="font-medium text-slate-900">
                           Clear containment strip between {patchGraph.nodeIds[edge.uIdx]} and {patchGraph.nodeIds[edge.vIdx]}
                         </span>
                       </div>
-                      <span className="font-mono text-slate-500">Effort score {edge.weight.toFixed(1)}</span>
+                      <span className="font-mono text-[11px] sm:text-xs text-slate-500 pl-19 sm:pl-0">
+                        Effort score {edge.weight.toFixed(1)}
+                      </span>
                     </div>
                   ))}
                 </div>

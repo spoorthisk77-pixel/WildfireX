@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArcElement,
   BarElement,
@@ -30,6 +30,22 @@ ChartJS.register(
 const SANS_FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
 const MONO_FONT = "'IBM Plex Mono', monospace";
 
+function useIsCompactScreen(): boolean {
+  const [compact, setCompact] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const onChange = () => setCompact(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  return compact;
+}
+
 export function LightLineChart({
   data,
   yLabel,
@@ -37,17 +53,21 @@ export function LightLineChart({
   data: ChartData<'line'>;
   yLabel?: string;
 }) {
+  const compact = useIsCompactScreen();
+
   const opts: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 180 },
+    animation: { duration: 220, easing: 'easeOutQuart' },
+    interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: {
         labels: {
           color: '#475569',
-          font: { family: SANS_FONT, size: 11, weight: 500 },
+          font: { family: SANS_FONT, size: compact ? 10 : 11, weight: 500 },
           boxWidth: 10,
           boxHeight: 10,
+          padding: compact ? 10 : 14,
           usePointStyle: true,
         },
       },
@@ -58,20 +78,32 @@ export function LightLineChart({
         titleColor: '#0F172A',
         bodyColor: '#334155',
         padding: 10,
+        cornerRadius: 8,
         titleFont: { family: SANS_FONT, size: 12, weight: 600 },
         bodyFont: { family: MONO_FONT, size: 11 },
       },
     },
     scales: {
       x: {
-        grid: { color: 'rgba(15, 23, 42, 0.05)' },
-        ticks: { color: '#64748B', font: { family: MONO_FONT, size: 10 }, maxRotation: 0 },
+        grid: { color: 'rgba(15, 23, 42, 0.04)' },
+        border: { display: false },
+        ticks: {
+          color: '#64748B',
+          font: { family: MONO_FONT, size: 10 },
+          maxRotation: 0,
+          maxTicksLimit: compact ? 5 : 8,
+        },
       },
       y: {
         grid: { color: 'rgba(15, 23, 42, 0.06)' },
-        ticks: { color: '#64748B', font: { family: MONO_FONT, size: 10 } },
+        border: { display: false },
+        ticks: {
+          color: '#64748B',
+          font: { family: MONO_FONT, size: 10 },
+          maxTicksLimit: 5,
+        },
         title: yLabel
-          ? { display: true, text: yLabel, color: '#64748B', font: { family: SANS_FONT, size: 11 } }
+          ? { display: !compact, text: yLabel, color: '#64748B', font: { family: SANS_FONT, size: 11 } }
           : undefined,
       },
     },
@@ -92,17 +124,21 @@ export function LightBarChart({
   yLabel?: string;
   stacked?: boolean;
 }) {
+  const compact = useIsCompactScreen();
+
   const opts: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 180 },
+    animation: { duration: 220, easing: 'easeOutQuart' },
     plugins: {
       legend: {
         labels: {
           color: '#475569',
-          font: { family: SANS_FONT, size: 11, weight: 500 },
+          font: { family: SANS_FONT, size: compact ? 10 : 11, weight: 500 },
           boxWidth: 10,
           boxHeight: 10,
+          padding: compact ? 10 : 14,
+          usePointStyle: true,
         },
       },
       tooltip: {
@@ -112,6 +148,7 @@ export function LightBarChart({
         titleColor: '#0F172A',
         bodyColor: '#334155',
         padding: 10,
+        cornerRadius: 8,
         titleFont: { family: SANS_FONT, size: 12, weight: 600 },
         bodyFont: { family: MONO_FONT, size: 11 },
       },
@@ -119,15 +156,25 @@ export function LightBarChart({
     scales: {
       x: {
         stacked,
-        grid: { color: 'rgba(15, 23, 42, 0.05)' },
-        ticks: { color: '#64748B', font: { family: SANS_FONT, size: 11 } },
+        grid: { color: 'rgba(15, 23, 42, 0.04)' },
+        border: { display: false },
+        ticks: {
+          color: '#64748B',
+          font: { family: SANS_FONT, size: compact ? 10 : 11 },
+          maxRotation: compact ? 18 : 0,
+        },
       },
       y: {
         stacked,
         grid: { color: 'rgba(15, 23, 42, 0.06)' },
-        ticks: { color: '#64748B', font: { family: MONO_FONT, size: 10 } },
+        border: { display: false },
+        ticks: {
+          color: '#64748B',
+          font: { family: MONO_FONT, size: 10 },
+          maxTicksLimit: 5,
+        },
         title: yLabel
-          ? { display: true, text: yLabel, color: '#64748B', font: { family: SANS_FONT, size: 11 } }
+          ? { display: !compact, text: yLabel, color: '#64748B', font: { family: SANS_FONT, size: 11 } }
           : undefined,
       },
     },
@@ -140,18 +187,22 @@ export function LightBarChart({
 }
 
 export function LightDoughnutChart({ data }: { data: ChartData<'doughnut'> }) {
+  const compact = useIsCompactScreen();
+
   const opts: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: { duration: 240, easing: 'easeOutQuart' },
     cutout: '64%',
     plugins: {
       legend: {
-        position: 'right',
+        position: compact ? 'bottom' : 'right',
         labels: {
           color: '#475569',
-          font: { family: SANS_FONT, size: 11, weight: 500 },
+          font: { family: SANS_FONT, size: compact ? 10 : 11, weight: 500 },
           boxWidth: 10,
-          padding: 12,
+          padding: compact ? 10 : 12,
+          usePointStyle: true,
         },
       },
       tooltip: {
@@ -161,6 +212,7 @@ export function LightDoughnutChart({ data }: { data: ChartData<'doughnut'> }) {
         titleColor: '#0F172A',
         bodyColor: '#334155',
         padding: 10,
+        cornerRadius: 8,
         titleFont: { family: SANS_FONT, size: 12, weight: 600 },
         bodyFont: { family: MONO_FONT, size: 11 },
       },
@@ -182,12 +234,19 @@ export function LightScatterChart({
   xLabel: string;
   yLabel: string;
 }) {
+  const compact = useIsCompactScreen();
+
   const opts: ChartOptions<'scatter'> = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: { duration: 220, easing: 'easeOutQuart' },
     plugins: {
       legend: {
-        labels: { color: '#475569', font: { family: SANS_FONT, size: 11, weight: 500 } },
+        labels: {
+          color: '#475569',
+          font: { family: SANS_FONT, size: compact ? 10 : 11, weight: 500 },
+          usePointStyle: true,
+        },
       },
       tooltip: {
         backgroundColor: '#FFFFFF',
@@ -196,18 +255,29 @@ export function LightScatterChart({
         titleColor: '#0F172A',
         bodyColor: '#334155',
         padding: 10,
+        cornerRadius: 8,
         bodyFont: { family: MONO_FONT, size: 11 },
       },
     },
     scales: {
       x: {
-        grid: { color: 'rgba(15, 23, 42, 0.05)' },
-        ticks: { color: '#64748B', font: { family: MONO_FONT, size: 10 } },
+        grid: { color: 'rgba(15, 23, 42, 0.04)' },
+        border: { display: false },
+        ticks: {
+          color: '#64748B',
+          font: { family: MONO_FONT, size: 10 },
+          maxTicksLimit: compact ? 5 : 8,
+        },
         title: { display: true, text: xLabel, color: '#64748B', font: { family: SANS_FONT, size: 11 } },
       },
       y: {
         grid: { color: 'rgba(15, 23, 42, 0.06)' },
-        ticks: { color: '#64748B', font: { family: MONO_FONT, size: 10 } },
+        border: { display: false },
+        ticks: {
+          color: '#64748B',
+          font: { family: MONO_FONT, size: 10 },
+          maxTicksLimit: 5,
+        },
         title: { display: true, text: yLabel, color: '#64748B', font: { family: SANS_FONT, size: 11 } },
       },
     },

@@ -87,15 +87,15 @@ export function DatasetUploadModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[1px] p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="upload-modal-title"
     >
-      <div className="w-full max-w-3xl rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <div>
-            <h2 id="upload-modal-title" className="text-base font-semibold text-slate-900">
+      <div className="w-full max-w-3xl rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden animate-modal-enter">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-3.5 sm:py-4">
+          <div className="min-w-0 pr-2">
+            <h2 id="upload-modal-title" className="text-sm sm:text-base font-semibold text-slate-900">
               Import Forest Dataset
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -105,14 +105,14 @@ export function DatasetUploadModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors shrink-0"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 max-h-[82vh] overflow-y-auto">
           {/* File Dropzone */}
           <label
             onDragOver={(e) => {
@@ -125,10 +125,10 @@ export function DatasetUploadModal({
               setDragActive(false);
               void handleFile(e.dataTransfer.files?.[0] || null);
             }}
-            className={`block cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+            className={`block cursor-pointer rounded-xl border-2 border-dashed p-5 sm:p-6 text-center transition-colors ${
               dragActive
                 ? 'border-[#0284C7] bg-sky-50'
-                : 'border-slate-300 bg-slate-50 hover:border-[#0284C7] hover:bg-sky-50/40'
+                : 'border-slate-300 bg-slate-50/70 hover:border-[#0284C7] hover:bg-sky-50/40'
             }`}
           >
             <input
@@ -141,7 +141,7 @@ export function DatasetUploadModal({
               <Upload className="h-5 w-5" />
             </div>
             <div className="mt-3 text-sm font-semibold text-slate-800">
-              Drop a CSV, JSON, or GeoJSON dataset here, or click to browse
+              Drop a CSV, JSON, or GeoJSON dataset here, or tap to browse
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Automatically maps elevation, fuel density, moisture index, surface temperature, and biome class.
@@ -164,7 +164,7 @@ export function DatasetUploadModal({
 
           {/* Global Forest Reference Sectors */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
                 <Globe2 className="h-4 w-4 text-[#0284C7]" />
                 <span>Calibrated Global Forest Sectors</span>
@@ -178,7 +178,7 @@ export function DatasetUploadModal({
                   key={preset.id}
                   type="button"
                   onClick={() => handleImportPreset(preset.id)}
-                  className="text-left rounded-xl border border-slate-200 bg-white p-4 shadow-xs hover:border-[#0284C7] hover:shadow-sm transition-all flex flex-col justify-between gap-2"
+                  className="text-left rounded-xl border border-slate-200 bg-white p-4 shadow-2xs hover:border-[#0284C7] hover:shadow-sm transition-all flex flex-col justify-between gap-2"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2">

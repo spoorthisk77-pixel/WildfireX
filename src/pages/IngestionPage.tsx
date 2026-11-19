@@ -42,7 +42,7 @@ const GLOBAL_PRESETS: Array<{
     title: 'Bannerghatta — Dry Deciduous Corridor',
     format: 'CSV',
     coords: '12.8°N, 77.6°E',
-    summary: 'Mixed dry scrub and deciduous forest ridges intersected by a central stream break.',
+    summary: 'Mixed dry scrub and deciduous ridges intersected by a central stream break.',
   },
   {
     id: 'boreal',
@@ -139,27 +139,27 @@ export function IngestionPage() {
   }, [staged]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6 animate-panel-enter">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900">
             Geospatial Dataset Ingestion Portal
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 leading-relaxed">
             Import CSV, JSON, or GeoJSON forest terrain datasets. Simulation remains dormant until you deploy a dataset.
           </p>
         </div>
 
         {isInitialized && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <span className="text-xs font-medium text-[#16A34A]">
               Active: {datasetMeta?.name}
             </span>
             <button
               type="button"
               onClick={unloadToDormant}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span>Unload to Dormant</span>
@@ -169,7 +169,7 @@ export function IngestionPage() {
       </div>
 
       {/* Dropzone + Global Forest Reference Sectors */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
         <section
           onDragOver={(e) => {
             e.preventDefault();
@@ -182,7 +182,7 @@ export function IngestionPage() {
             const dropped = e.dataTransfer.files?.[0] || null;
             void handleFile(dropped);
           }}
-          className={`lg:col-span-5 rounded-xl border-2 border-dashed p-6 flex flex-col justify-between transition-colors ${
+          className={`lg:col-span-5 rounded-xl border-2 border-dashed p-5 sm:p-6 flex flex-col justify-between transition-all ${
             dragActive
               ? 'border-[#0284C7] bg-sky-50'
               : 'border-slate-300 bg-white shadow-2xs'
@@ -190,7 +190,7 @@ export function IngestionPage() {
         >
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-[#0284C7] text-xs font-semibold">
-              <Upload className="h-4 w-4" />
+              <Upload className="h-4 w-4 shrink-0" />
               <span>Upload Custom Forest File (.CSV / .JSON / .GEOJSON)</span>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -198,8 +198,8 @@ export function IngestionPage() {
             </p>
           </div>
 
-          <div className="mt-6 space-y-3">
-            <label className="block cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center hover:border-[#0284C7] hover:bg-sky-50/40 transition-colors">
+          <div className="mt-5 sm:mt-6 space-y-3">
+            <label className="block cursor-pointer rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-6 text-center hover:border-[#0284C7] hover:bg-sky-50/40 transition-colors">
               <input
                 type="file"
                 accept=".csv,.json,.geojson"
@@ -208,7 +208,7 @@ export function IngestionPage() {
               />
               <FileCode2 className="mx-auto h-7 w-7 text-[#0284C7]" />
               <div className="mt-2.5 text-sm font-semibold text-slate-800">
-                Drop dataset file here or click to browse
+                Drop dataset file here or tap to browse
               </div>
               <div className="mt-1 text-xs text-slate-500">
                 Instant schema validation and coordinate mapping
@@ -224,23 +224,23 @@ export function IngestionPage() {
           </div>
         </section>
 
-        <section className="lg:col-span-7 rounded-xl border border-slate-200 bg-white p-6 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <section className="lg:col-span-7 rounded-xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-900">
               <Globe2 className="h-4 w-4 text-[#0284C7]" />
               <span>Global Forest Reference Datasets</span>
             </div>
-            <span className="text-xs text-slate-500">576 terrain blocks per sector</span>
+            <span className="text-xs text-slate-500 tabular-nums">576 terrain blocks per sector</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
             {GLOBAL_PRESETS.map((preset) => (
               <div
                 key={preset.id}
-                className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 flex flex-col justify-between gap-4"
+                className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 flex flex-col justify-between gap-4 hover:border-[#0284C7]/50 hover:bg-white hover:shadow-xs transition-all duration-200"
               >
                 <div>
-                  <div className="text-xs font-medium text-[#0284C7]">
+                  <div className="text-xs font-medium text-[#0284C7] tabular-nums">
                     {preset.format} · {preset.coords}
                   </div>
                   <h3 className="mt-1 text-sm font-semibold text-slate-900">{preset.title}</h3>
@@ -249,7 +249,7 @@ export function IngestionPage() {
                 <button
                   type="button"
                   onClick={() => handleLoadGlobalPreset(preset.id)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 hover:border-[#0284C7] hover:text-[#0284C7] transition-colors shadow-2xs"
+                  className="w-full min-h-[40px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 hover:border-[#0284C7] hover:text-[#0284C7] transition-colors shadow-2xs"
                 >
                   Preview {preset.format} Sector
                 </button>
@@ -261,8 +261,8 @@ export function IngestionPage() {
 
       {/* Staged Dataset Preview & Deployment */}
       {staged && (
-        <section className="rounded-xl border border-sky-200 bg-white p-6 shadow-sm space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <section className="rounded-xl border border-sky-200 bg-white p-5 sm:p-6 shadow-xs space-y-5 sm:space-y-6 animate-panel-enter">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-[#16A34A] shrink-0 mt-0.5" />
               <div>
@@ -276,11 +276,11 @@ export function IngestionPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
               <button
                 type="button"
                 onClick={handleDownloadStaged}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <Download className="h-3.5 w-3.5" />
                 <span>Download Source</span>
@@ -288,7 +288,7 @@ export function IngestionPage() {
               <button
                 type="button"
                 onClick={handleDeployToEngine}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#16A34A] px-4 py-2 text-xs font-semibold text-white hover:bg-[#15803D] transition-colors shadow-xs"
+                className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-[#16A34A] px-4 py-2 text-xs font-semibold text-white hover:bg-[#15803D] transition-colors shadow-xs"
               >
                 <span>Initialize 3D Simulation Arena</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -296,37 +296,37 @@ export function IngestionPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs tabular-nums">
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs tabular-nums">
+            <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5">
               <div className="text-slate-500">Elevation Range</div>
-              <div className="mt-1 font-mono text-base font-semibold text-slate-900">
+              <div className="mt-1 font-mono text-sm sm:text-base font-semibold text-slate-900">
                 {staged.meta.elevationRange
                   ? `${staged.meta.elevationRange.min.toFixed(0)}–${staged.meta.elevationRange.max.toFixed(0)} m`
                   : '—'}
               </div>
             </div>
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3.5">
+            <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5">
               <div className="text-slate-500">Avg Fuel Density</div>
-              <div className="mt-1 font-mono text-base font-semibold text-[#16A34A]">
+              <div className="mt-1 font-mono text-sm sm:text-base font-semibold text-[#16A34A]">
                 {staged.meta.meanFuelDensity !== null ? staged.meta.meanFuelDensity.toFixed(3) : '—'}
               </div>
             </div>
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3.5">
+            <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5">
               <div className="text-slate-500">Avg Moisture Index</div>
-              <div className="mt-1 font-mono text-base font-semibold text-[#0284C7]">
+              <div className="mt-1 font-mono text-sm sm:text-base font-semibold text-[#0284C7]">
                 {staged.meta.meanMoisture !== null ? staged.meta.meanMoisture.toFixed(3) : '—'}
               </div>
             </div>
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3.5">
+            <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3.5">
               <div className="text-slate-500">Avg Surface Temp</div>
-              <div className="mt-1 font-mono text-base font-semibold text-amber-600">
+              <div className="mt-1 font-mono text-sm sm:text-base font-semibold text-amber-600">
                 {staged.meta.meanTemperature !== null ? `${staged.meta.meanTemperature.toFixed(1)} °C` : '—'}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-5 h-56 rounded-lg border border-slate-100 bg-slate-50 p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+            <div className="lg:col-span-5 h-56 rounded-lg border border-slate-100 bg-slate-50/70 p-4">
               {biomeDistribution && <LightBarChart data={biomeDistribution} yLabel="Blocks" />}
             </div>
 
@@ -347,7 +347,7 @@ export function IngestionPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {staged.sampleRows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80">
+                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                       {staged.rawColumnNames.slice(0, 8).map((col) => (
                         <td key={col} className="px-3 py-2 whitespace-nowrap text-slate-700">
                           {row[col] !== undefined && row[col] !== null ? String(row[col]) : '—'}
